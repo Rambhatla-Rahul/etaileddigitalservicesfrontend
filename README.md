@@ -6,10 +6,16 @@ This is the **frontend** repository of the ETailed Digital Services platform, bu
 
 ## 📸 Preview
 
-> Live deployment: _[Coming Soon]_  
+
+> Live deployment: [etaileddigitalservicesfrontend.vercel.app](etaileddigitalservicesfrontend.vercel.app)  (in order to login/signup go to [https://github.com/Rambhatla-Rahul/etaileddigitalservicesbackend](https://github.com/Rambhatla-Rahul/etaileddigitalservicesbackend) and follow the steps to start the server and then login.
 > GitHub repo: [https://github.com/Rambhatla-Rahul/etaileddigitalservicesfrontend](https://github.com/Rambhatla-Rahul/etaileddigitalservicesfrontend)
 
 ---
+## Images of the server for example profile
+### Dark Theme
+![image](https://github.com/user-attachments/assets/6852cfce-d892-4900-921a-b26e211d3f06)
+### Light Theme
+![image](https://github.com/user-attachments/assets/55cdbea9-a599-47f9-9740-1f5e1b8b028d)
 
 ## ⚙️ Tech Stack
 
