@@ -2,33 +2,85 @@
 import { useEffect, useState } from 'react';
 import { redirect, useRouter } from 'next/navigation';
 import { useUser } from '../context/UserContext';
+import axios from 'axios';
+import { AiOutlineLoading } from "react-icons/ai";
+const api = axios.create({
+  baseURL: 'http://localhost:5000',
+  withCredentials: true,
+});
 
-const steps = ["Personal Info", "Business Info", "Preferences"];
+const steps = ["Personal Info", "Business Info", "Preferences","Password"];
 
 export default function Onboarding() {
   const router = useRouter();
-  const { setUser, darkMode, setDarkMode } = useUser();
+  const { user,setUser, darkMode, setDarkMode } = useUser();
 
   const [step, setStep] = useState(0);
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [loading,setLoading] = useState(false);
+  
   const [form, setForm] = useState({
     name: '', email: '',
     company: '', industry: '', size: '',
-    theme: 'light', layout: 'grid',
+    password:'',theme: 'light', layout: 'grid',
+    
   });
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
+  
+const sendData = async () => {
+  setLoading(true);
+  try {
+    const response = await api.post('/api/register', form);
 
-  const next = () => {
+    if (response.data.info === 'User already exists') {
+      alert('This User Already Exists. Please Login to Continue!')
+      router.push('/login');
+      return;
+    }
+
+    const token = response.data.token;
+
+    
+    
+    localStorage.setItem('token', token);
+    localStorage.setItem('layout', form.layout);
+
+    setLoading(false);
+    router.push('/dashboard');
+  } catch (e) {
+    setLoading(false);
+    console.error('Error in sendData:', e.message);
+  }
+};
+
+
+
+  const next = async() => {
+    if(step === 2) {
+      if (form.password !== confirmPassword) {
+        alert('Passwords do not match');
+        return;
+      }
+      if (!form.password || !confirmPassword) {
+        alert('Please fill in both password fields');
+        return;
+      }
+    }
     if (!isValid()) return alert('Please fill all required fields');
     if (step < 2) setStep(step + 1);
     else {
       setUser(form);
       setDarkMode(form.theme === 'dark');
-      router.push('/dashboard');
+      await sendData();
+      
     }
   };
+  const handleConfirmPassword = (e) => {
+    setConfirmPassword(e.target.value)
+  }
 
   const back = () => step > 0 && setStep(step - 1);
 
@@ -38,7 +90,6 @@ export default function Onboarding() {
     return true;
   };
   useEffect (() => {
-    const user = localStorage.getItem('user');
     if (user){
       redirect('/dashboard');
     }
@@ -46,7 +97,14 @@ export default function Onboarding() {
   
   return (
     <div className={`w-full min-h-screen flex items-center justify-center px-4 sm:px-6 md:px-8 bg-white text-black dark:bg-gray-900 dark:text-white`}>
-      <div className={`w-full max-w-md p-4 sm:p-6 md:p-8 h-full sm:h-auto flex flex-col justify-evenly rounded shadow-2xl ${darkMode ? 'shadow-black' : ''} bg-white dark:bg-gray-900`}>
+      {
+        loading? (
+            <div className="w-full h-screen absolute max-w-md p-4 sm:p-6 md:p-8 sm:h-auto flex items-center justify-center">
+                        <div className="text-4xl font-extrabold animate-spin delay-"><AiOutlineLoading /></div>
+                      </div>
+        ):
+        (
+          <div className={`w-full max-w-md p-4 sm:p-6 md:p-8 h-full sm:h-auto flex flex-col justify-evenly rounded shadow-2xl ${darkMode ? 'shadow-black' : ''} bg-white dark:bg-gray-900`}>
         <h1 className='w-full text-center text-2xl sm:text-3xl font-bold italic'>
           Welcome to Onboarding to E-Tailed Digital Services
         </h1>
@@ -89,6 +147,12 @@ export default function Onboarding() {
               </select>
             </div>
           )}
+          {step === 2 && (
+            <div className='w-full flex flex-col space-y-4'>
+              <input name="password" type='password' placeholder="Password" onChange={handleChange} className={`input ${!darkMode ? 'inputDark' : 'inputLight'}`} value={form.password} />
+              <input name="confirmpassword" type='password' placeholder="Confirm Password" onChange={handleConfirmPassword} className={`input ${!darkMode ? 'inputDark' : 'inputLight'}`} value={confirmPassword}/>
+            </div>
+          )}
         </div>
 
         <div className="mt-8 w-full flex flex-col sm:flex-row justify-between gap-4">
@@ -96,6 +160,8 @@ export default function Onboarding() {
           <button onClick={next} className="btn w-full sm:w-auto">{step === 2 ? 'Submit' : 'Next'}</button>
         </div>
       </div>
+        )
+      }
     </div>
   );
 }
